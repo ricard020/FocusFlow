@@ -35,7 +35,7 @@ FocusFlow es una aplicación diseñada para organizar listas y etapas de desarro
 
 ## Demo en Vivo
 
-Puedes ver la aplicación funcionando aquí: [[Enlace a Vercel]]
+Puedes ver la aplicación funcionando aquí: [[[Enlace a Vercel](https://focus-flow-delta-eight.vercel.app/)]]
 
 ## Estructura del Proyecto
 
