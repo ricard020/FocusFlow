@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>FocusFlow</title>
+    <meta name="description" content="Domina tu día con claridad." />
+    <link rel="icon" type="image/x-icon" href="assets/icons/logo.ico" />
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet" />
+    <!-- Material Symbols -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+        rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script src="js/tailwind-config.js"></script>
+    <link rel="stylesheet" href="css/styles.css" />
+</head>
+
+<body
+    class="bg-background-light dark:bg-background-dark font-display text-[#111818] dark:text-gray-100 flex flex-col h-screen overflow-hidden antialiased selection:bg-primary/20 selection:text-primary">
+
+    <!-- Top Navigation Bar -->
+    <header
+        class="h-16 shrink-0 bg-white dark:bg-[#1A2C2C] border-b border-[#e5e7eb] dark:border-[#2C3A40] px-4 md:px-6 flex items-center justify-between z-10 relative shadow-sm">
+        <div class="flex items-center gap-3 md:gap-4">
+            <div class="size-10 bg-primary/10 rounded-lg flex items-center justify-center overflow-hidden">
+                <img src="assets/images/logo.png" alt="FocusFlow Logo" class="w-8 h-8 object-contain" />
+            </div>
+            <h1 class="text-xl font-bold tracking-tight text-[#111818] dark:text-white">FocusFlow</h1>
+        </div>
+        <div class="flex items-center gap-2">
+            <button onclick="toggleTheme()" id="btn-theme" title="Cambiar tema"
+                class="flex items-center justify-center size-9 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors">
+                <span class="material-symbols-outlined text-[20px]" id="theme-icon">dark_mode</span>
+            </button>
+            <button onclick="openInfoModal()" id="btn-info" title="Información de la App"
+                class="flex items-center justify-center size-9 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors">
+                <span class="material-symbols-outlined text-[20px]">info</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Board Area -->
+    <main class="flex-1 overflow-x-auto overflow-y-hidden p-4 md:p-6 lg:p-8 snap-x snap-mandatory">
+        <div id="board" class="flex h-full gap-4 md:gap-6 min-w-max lg:min-w-0 lg:w-full items-stretch lg:justify-between">
+            <!-- Columns are rendered dynamically by JS -->
+        </div>
+    </main>
+
+    <!-- Modal for Create/Edit Task -->
+    <div id="task-modal" class="fixed inset-0 z-50 hidden">
+        <div class="modal-overlay absolute inset-0 bg-black/50 backdrop-blur-sm" onclick="closeModal()"></div>
+        <div class="modal-content absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[calc(100%-2rem)] md:w-full max-w-md">
+            <div class="bg-white dark:bg-card-dark rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+                <div class="px-6 py-5 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
+                    <h2 id="modal-title" class="text-lg font-bold text-[#111818] dark:text-white">Nueva Tarea</h2>
+                    <button onclick="closeModal()"
+                        class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 size-8 flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                        <span class="material-symbols-outlined text-[22px]">close</span>
+                    </button>
+                </div>
+                <form id="task-form" onsubmit="handleFormSubmit(event)" class="px-6 py-5 space-y-5">
+                    <input type="hidden" id="form-task-id" />
+                    <input type="hidden" id="form-task-column" />
+                    <div>
+                        <label for="form-title" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">
+                            Nombre de la tarea <span class="text-red-400">*</span>
+                        </label>
+                        <input type="text" id="form-title" required maxlength="120" placeholder="Ej: Diseñar la página de inicio"
+                            class="w-full h-11 px-4 bg-background-light dark:bg-background-dark border border-gray-200 dark:border-gray-600 rounded-lg text-sm text-[#111818] dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all" />
+                    </div>
+                    <div>
+                        <label for="form-description" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">
+                            Descripción
+                        </label>
+                        <textarea id="form-description" rows="3" maxlength="500" placeholder="Describe los detalles de la tarea..."
+                            class="w-full px-4 py-3 bg-background-light dark:bg-background-dark border border-gray-200 dark:border-gray-600 rounded-lg text-sm text-[#111818] dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all resize-none"></textarea>
+                    </div>
+                    <!-- Column selector (only for edit mode to move between columns) -->
+                    <div id="column-selector-wrapper" class="hidden">
+                        <label for="form-column-select" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">
+                            Mover a columna
+                        </label>
+                        <select id="form-column-select"
+                            class="w-full h-11 px-4 bg-background-light dark:bg-background-dark border border-gray-200 dark:border-gray-600 rounded-lg text-sm text-[#111818] dark:text-white focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all">
+                            <option value="todo">To Do</option>
+                            <option value="in-progress">In Progress</option>
+                            <option value="done">Done</option>
+                        </select>
+                    </div>
+                    <div class="flex gap-3 pt-2">
+                        <button type="button" onclick="closeModal()"
+                            class="flex-1 h-11 rounded-lg border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 font-bold text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                            Cancelar
+                        </button>
+                        <button type="submit" id="btn-submit"
+                            class="flex-1 h-11 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary-dark transition-colors shadow-md hover:shadow-lg">
+                            Guardar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete confirmation modal -->
+    <div id="delete-modal" class="fixed inset-0 z-50 hidden">
+        <div class="modal-overlay absolute inset-0 bg-black/50 backdrop-blur-sm" onclick="closeDeleteModal()"></div>
+        <div class="modal-content absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[calc(100%-2rem)] md:w-full max-w-sm">
+            <div class="bg-white dark:bg-card-dark rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+                <div class="px-6 py-5 text-center">
+                    <div class="mx-auto w-14 h-14 rounded-full bg-red-50 dark:bg-red-900/20 flex items-center justify-center mb-4">
+                        <span class="material-symbols-outlined text-red-500 text-[28px]">delete_forever</span>
+                    </div>
+                    <h2 class="text-lg font-bold text-[#111818] dark:text-white mb-2">¿Eliminar tarea?</h2>
+                    <p id="delete-task-name" class="text-sm text-gray-500 dark:text-gray-400 mb-6">Esta acción no se puede deshacer.</p>
+                    <input type="hidden" id="delete-task-id" />
+                    <div class="flex gap-3">
+                        <button onclick="closeDeleteModal()"
+                            class="flex-1 h-11 rounded-lg border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 font-bold text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                            Cancelar
+                        </button>
+                        <button onclick="confirmDelete()"
+                            class="flex-1 h-11 rounded-lg bg-red-500 text-white font-bold text-sm hover:bg-red-600 transition-colors shadow-md">
+                            Eliminar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Info Modal -->
+    <div id="info-modal" class="fixed inset-0 z-50 hidden">
+        <div class="modal-overlay absolute inset-0 bg-black/50 backdrop-blur-sm" onclick="closeInfoModal()"></div>
+        <div class="modal-content absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[calc(100%-2rem)] md:w-full max-w-sm">
+            <div class="bg-white dark:bg-card-dark rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden relative">
+                <button onclick="closeInfoModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 size-8 flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                    <span class="material-symbols-outlined text-[22px]">close</span>
+                </button>
+                <div class="px-6 py-8 text-center flex flex-col items-center">
+                    <div class="size-16 bg-primary/10 rounded-2xl flex items-center justify-center overflow-hidden mb-4">
+                        <img src="assets/images/logo.png" alt="FocusFlow Logo" class="w-12 h-12 object-contain" />
+                    </div>
+                    <h2 class="text-2xl font-bold text-[#111818] dark:text-white mb-1">FocusFlow</h2>
+                    <span class="text-[10px] font-bold text-primary/60 uppercase tracking-widest mb-4 px-2 py-0.5 bg-primary/5 rounded-full border border-primary/10">v1.0.0</span>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">Aplicación de lista de tareas diseñada para ayudarte a organizar tus actividades, priorizar lo importante y mantener el enfoque en tus objetivos diarios de forma simple y eficiente.</p>
+                    
+                    <div class="w-full h-px bg-gray-100 dark:bg-gray-700 mb-6"></div>
+                    
+                    <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">Desarrollado por</h3>
+                    <div class="flex gap-4 justify-center">
+                        <a href="mailto:ricarditojos268@gmail.com" class="text-gray-400 hover:text-primary transition-colors" title="Correo">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-mail"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+                        </a>
+                        <a href="https://github.com/ricard020" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-primary transition-colors" title="GitHub">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-github"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-primary transition-colors" title="LinkedIn">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-linkedin"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect width="4" height="12" x="2" y="9"/><circle cx="4" cy="4" r="2"/></svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast container -->
+    <div id="toast-container" class="fixed bottom-6 right-6 z-[60] flex flex-col gap-2"></div>
+
+    <script src="js/main.js"></script>
+</body>
+
+</html>
